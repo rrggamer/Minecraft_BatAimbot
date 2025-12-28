@@ -1,25 +1,43 @@
 import cv2
 from ultralytics import YOLO
+import mss
+import time
+import numpy as np
 
-# 1. Load your trained model
-# Replace 'best.pt' with the path to your downloaded weight file
+monitor = {"top": 0, "left": 0, "width": 1920, "height": 1080}
+
 model = YOLO("../Model/best1.pt")
 
-# 2. Load the image using OpenCV
-image_path = "bat.png"
-img = cv2.imread(image_path)
-
-# 3. Run Inference
-# The model returns a list of Results objects
-results = model(img)
-
-# 4. Plot the results
-# results[0].plot() creates a numpy array with the bounding boxes drawn on it
-annotated_frame = results[0].plot()
-
-# 5. Display the result using OpenCV
-cv2.imshow("YOLOv11 Detection", annotated_frame)
-
-# Wait for a key press and close the window
-cv2.waitKey(0)
+with mss.mss() as sct:
+    while True:
+        last_time = time.time()
+        
+        img = sct.grab(monitor)
+        
+        frame = np.array(img)
+        
+        frame = cv2.cvtColor(frame,cv2.COLOR_BGRA2BGR)
+        
+        results = model(frame, conf = 0.5, verbose=False)
+        
+        annotated_frame = results[0].plot()
+        
+        cv2.imshow("OpenCV Screen Capture", annotated_frame)
+        
+        if cv2.waitKey(1) & 0xFF == ord("q"):
+            break
+        
 cv2.destroyAllWindows()
+
+
+# image_path = "bat.png"
+# img = cv2.imread(image_path)
+
+
+# results = model(img)
+# annotated_frame = results[0].plot()
+
+# cv2.imshow("YOLOv11 Detection", annotated_frame)
+
+# cv2.waitKey(0)
+# cv2.destroyAllWindows()
